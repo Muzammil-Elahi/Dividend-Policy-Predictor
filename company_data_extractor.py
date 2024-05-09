@@ -78,6 +78,7 @@ class company_data_extractor:
 
         # Company's Industry
         predictors["industry"] = yf.Ticker(company_tick).info.get('industry')
+        predictors["sector"] = yf.Ticker(company_tick).info.get('sector')
 
         # Key Financial Ratios
         num_of_years = 2024 - start_year - 1
@@ -105,6 +106,7 @@ class company_data_extractor:
         predictor_names = list(predictors.columns)
         predictor_names.remove("year")
         predictor_names.remove("industry")
+        predictor_names.remove("sector")
         predictor_names.remove("symbol")
 
         def compute_change(df, predictor_list):
