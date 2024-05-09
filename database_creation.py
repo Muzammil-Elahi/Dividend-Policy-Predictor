@@ -56,7 +56,7 @@ print(f"1: Obtaining data for {ticker}")
 company_data = data_extractor.get_data(ticker, start_year, end_year, fed_interest_rates)
 if type(company_data).__name__ != "int":
     dataset.append(company_data)
-    company_data.to_csv("Stock_data.csv",index=False)
+    company_data.to_csv("Stock_data_new.csv",index=False)
 company_number = 2
 for ticker in tickers[1:]:
     print(f"{company_number}: Obtaining data for {ticker}")
@@ -64,7 +64,7 @@ for ticker in tickers[1:]:
     if type(company_data).__name__ == "int":
         continue
     # dataset.append(company_data)
-    company_data.to_csv("Stock_data.csv",mode='a',index=False,header=False)
+    company_data.to_csv("Stock_data_new.csv",mode='a',index=False,header=False)
     company_number = company_number + 1
 # dataset = pd.concat(dataset, ignore_index=True)
 
