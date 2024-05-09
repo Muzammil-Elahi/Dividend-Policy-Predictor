@@ -11,7 +11,7 @@ We retrieved data from https://financialmodelingprep.com/, https://fred.stlouisf
 1. `git clone https://github.com/Muzammil-Elahi/Dividend-Policy-Predictor`
 2. Register and obtain API Keys from https://financialmodelingprep.com/ and https://fred.stlouisfed.org/. Store them in strings in `.env` with names `API_KEY_FMP` and `API_KEY_FRED`.
 3. To run the data ETL process with the latest data, run `database_creation.py`. You can skip this step as there is already a file `Stock_data.csv` in the folder `storage_data.csv`. However, this data might be outdated.
-4. Run `data_preprocessing.py` to do categorical endoing and oversampling. You can skip this step as there is already output files in the folder `storage_data.csv`. However, these files are derived from the outdated `storage_data.csv`.
+4. Run `data_preprocessing.py` to do categorical encoding and oversampling. You can skip this step as there is already output files in the folder `storage_data`. However, these files are derived from the outdated `storage_data.csv`.
 5. Run `feature_engineering.py` to run Random Forest Model and find out the combination of features with maximal ROC.
 6. ... (to be updated)
 ## Data visualization and outcome of the project
