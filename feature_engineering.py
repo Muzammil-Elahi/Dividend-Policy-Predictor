@@ -8,17 +8,6 @@ from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestClassifier
 # from sklearn.metrics import roc_auc_score, f1_score, accuracy_score, make_scorer
 import sklearn.metrics as skm
-from sklearn.neighbors import KNeighborsClassifier
-from sklearn.linear_model import LogisticRegression
-from sklearn.tree import DecisionTreeClassifier
-from sklearn.svm import SVC
-from sklearn.pipeline import Pipeline
-from sklearn.preprocessing import OrdinalEncoder, LabelEncoder
-from sklearn.compose import ColumnTransformer
-from sklearn.model_selection import cross_val_score, GridSearchCV
-import pickle
-import optuna
-from xgboost import XGBClassifier
 
 warnings.filterwarnings('ignore')
 
@@ -36,7 +25,8 @@ X_train_temp = X_train_oversampled.copy()
 X_validate_temp = X_validate_transformed.copy()
 
 # Initialize the result dataframe
-result_df = pd.DataFrame(columns=['Features_Removed', 'ROC_Score'])
+result_df = pd.DataFrame(columns=['Features_Removed', 'ROC_Score', 'f1',
+                                  'accuracy', 'precision', 'recall'])
 
 # First, evaluate performance using all features
 randomForestModel = RandomForestClassifier(max_features=None)
@@ -44,16 +34,24 @@ print('Random Forest fitting started.')
 randomForestModel.fit(X_train_temp, y_train_oversampled)
 # Predict probabilities on test data
 y_pred_probs = randomForestModel.predict_proba(X_validate_temp)[:, 1]
+y_pred = randomForestModel.predict(X_validate_temp)
 # Different metrics of classification
 roc_score = skm.roc_auc_score(y_test, y_pred_probs)
-# f1_score = skm.f1_score(y_test, y_pred_probs, average=None)
-
-
+f1_score = skm.f1_score(y_test, y_pred, average=None)[0]
+accuracy = skm.accuracy_score(y_test, y_pred)
+precision = skm.precision_score(y_test, y_pred, average=None)[0]
+recall = skm.recall_score(y_test, y_pred, average=None)[0]
 # Append the result to the result dataframe
-roc_dict = {'Features_Removed': 'None', 'no_features_used': len(X_train_temp.columns), 'ROC_Score': roc_score}
+roc_dict = {
+    'Features_Removed': 'None',
+    'no_features_used': len(X_train_temp.columns),
+    'ROC_Score': roc_score, 'f1': f1_score, 'accuracy': accuracy,
+    'precision': precision, 'recall': recall}
 result_df = pd.DataFrame([roc_dict])
 total_num = len(X_train_temp.columns)
-print(f"Feature_Removed: None, Number of features used: {len(X_train_temp.columns)}, ROC_AUC_Score: {roc_score}")
+print(f"Feature_Removed: None, Number of features used: {len(X_train_temp.columns)}, \
+ROC_AUC_Score: {roc_score}, F1: {f1_score}, Accuracy: {accuracy}, Precision: {precision} \
+      Recall: {recall}")
 result_df.to_csv("storage_files/result_df.csv",index=False)
 
 # Sort importance_table by Importance in ascending order to start with the least important
@@ -71,23 +69,35 @@ for index, row in importance_table_sorted.iterrows():
     # Compute ROC score
     roc_score = skm.roc_auc_score(y_test, y_pred_probs)
     # Append the result to the result dataframe
-    roc_dict = {'Features_Removed': row['Feature'], 'no_features_used': len(X_train_temp.columns), 'ROC_Score': roc_score}
+    roc_dict = {
+        'Features_Removed': row['Feature'],
+        'no_features_used': len(X_train_temp.columns),
+        'ROC_Score': roc_score, 'f1': f1_score, 'accuracy': accuracy,
+        'precision': precision, 'recall': recall}
     pd.DataFrame([roc_dict]).to_csv("storage_files/result_df.csv",mode='a',index=False,header=False)
     result_df = pd.concat([result_df, pd.DataFrame([roc_dict])])
-    print(
-        f"Feature_Removed: {row['Feature']}, Number of features used: {len(X_train_temp.columns)}, ROC_AUC_Score: {roc_score}")
+    print(f"Feature_Removed: {row['Feature']}, Number of features used: {len(X_train_temp.columns)}, \
+    ROC_AUC_Score: {roc_score}, F1: {f1_score}, Accuracy: {accuracy}, Precision: {precision} \
+    Recall: {recall}")
     # If only one feature left, break the loop
     if X_train_temp.shape[1] == 1:
         break
 
-if __name__ == '__main__':
-    # Plot a bar chart to visualize ROC scores
+def plot(metric: str):
+    """
+    metric: 'ROC_Score', 'f1', 'accuracy', 'precision' or 'recall'.
+    """
     plt.figure(figsize=(20, 10))
-    sns.barplot(data=result_df, x="no_features_used", y="ROC_Score")
-    plt.title("ROC scores")
+    sns.barplot(data=result_df, x="no_features_used", y=metric)
+    plt.title(metric)
     plt.subplots_adjust(bottom=0.2, top=0.95)
     plt.xticks(rotation=45, ha='right', rotation_mode="anchor")
     plt.show()
+
+if __name__ == '__main__':
+    for metric in ['ROC_Score', 'f1', 'accuracy', 'precision', 'recall']:
+        plot(metric)
+
 
 # Find out the one with max roc_score.
 max_roc_score = result_df.iloc[0]['ROC_Score']
@@ -100,15 +110,8 @@ for index, row in result_df.iterrows():
         max_inds.append(index)
 max_no_features = [total_num-i for i in max_inds]
 print(f'Conclusion: The best model is to use {max_no_features} features.')
-
-# Save the results
-# with open('storage_files/result_df.pkl', 'wb') as file:
-#     pickle.dump(result_df, file)
-# with open('storage_files/importance_table_sorted.pkl', 'wb') as file:
-#     pickle.dump(importance_table_sorted, file)
-
-# Load the results
-# with open('storage_files/result_df.pkl', 'rb') as file:
-#     result_df = pickle.load(file)
-
-
+f = open('storage_files/max_no_features.txt','w')
+for i in max_no_features:
+    f.write(str(i))
+    f.write('\n')
+f.close()
