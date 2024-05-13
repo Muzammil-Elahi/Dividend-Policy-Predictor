@@ -166,9 +166,6 @@ plt.subplots_adjust(bottom=0.2, top=0.95)
 plt.xticks(rotation=45, ha='right', rotation_mode="anchor")
 plt.show()
 
-# ============================================================================
-
-
 # Now let's remove the features one by one from the least important one
 X_train_temp = X_train_oversampled.copy()
 X_validate_temp = X_validate_transformed.copy()
@@ -221,6 +218,7 @@ with open('importance_table_sorted.pkl', 'wb') as file:
 with open('result_df.pkl', 'rb') as file:
     result_df = pickle.load(file)
 
+# ============================================================================
 # Model Selection
 
 X_train_oversampled.info()
@@ -242,7 +240,7 @@ print("Best ROC-AUC Score: ", gridSearch.best_score_)
 
 # Create and save model
 best_model_lr = LogisticRegression(**best_params_lr, solver='liblinear', n_jobs=-1)
-with open('best_models_lr.pkl', 'wb') as file:
+with open('storage_files/best_models_lr.pkl', 'wb') as file:
     pickle.dump(best_model_lr, file)
 
 
@@ -278,7 +276,7 @@ print("Best ROC-AUC Score: ", study_lr.best_value)
 
 # Create and save model
 best_model_lr = LogisticRegression(**best_params_lr, solver='liblinear', n_jobs=-1)
-with open('best_models_lr.pkl', 'wb') as file:
+with open('storage_files/best_models_lr.pkl', 'wb') as file:
     pickle.dump(best_model_lr, file)
 
 # Decision Tree
@@ -312,7 +310,7 @@ print("Best ROC-AUC Score: ", study_dt.best_value)
 
 # Create and save model
 best_model_dt = DecisionTreeClassifier(**best_params_dt)
-with open('best_models_dt.pkl', 'wb') as file:
+with open('storage_files/best_models_dt.pkl', 'wb') as file:
     pickle.dump(best_model_dt, file)
 
 # KNN
@@ -347,7 +345,7 @@ print("Best ROC-AUC Score: ", study_knn.best_value)
 
 # Create and save model
 best_model_knn = KNeighborsClassifier(**best_params_knn)
-with open('best_models_knn.pkl', 'wb') as file:
+with open('storage_files/best_models_knn.pkl', 'wb') as file:
     pickle.dump(best_model_knn, file)
 
 # Random Forest
@@ -383,7 +381,7 @@ print("Best ROC-AUC: Score: ", study_rf.best_value)
 
 # Create and save model
 best_model_rf = RandomForestClassifier(**best_params_rf, n_jobs=-1)
-with open('best_models_rf.pkl', 'wb') as file:
+with open('storage_files/best_models_rf.pkl', 'wb') as file:
     pickle.dump(best_model_rf, file)
 
 # XgBoost
@@ -443,7 +441,7 @@ print("Best Parameters: ", best_params_xgb)
 print("Best ROC-AUC Score: ", study_xgb.best_value)
 
 best_model_xgb = XGBClassifier(**best_params_xgb, use_label_encoder=False, n_jobs=-1)
-with open('best_models_xgb.pkl', 'wb') as file:
+with open('storage_files/best_models_xgb.pkl', 'wb') as file:
     pickle.dump(best_model_xgb, file)
 
 # Label encode categorical features with many categories
@@ -457,15 +455,15 @@ with open('best_models_xgb.pkl', 'wb') as file:
 # X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2)
 
 # Model selection - Compare Performance
-with open('best_models_lr.pkl', 'rb') as file:
+with open('storage_files/best_models_lr.pkl', 'rb') as file:
     best_model_lr = pickle.load(file)
-with open('best_models_dt.pkl', 'rb') as file:
+with open('storage_files/best_models_dt.pkl', 'rb') as file:
     best_model_dt = pickle.load(file)
-with open('best_models_knn.pkl', 'rb') as file:
+with open('storage_files/best_models_knn.pkl', 'rb') as file:
     best_model_knn = pickle.load(file)
-with open('best_models_rf.pkl', 'rb') as file:
+with open('storage_files/best_models_rf.pkl', 'rb') as file:
     best_model_rf = pickle.load(file)
-with open('best_models_xgb.pkl', 'rb') as file:
+with open('storage_files/best_models_xgb.pkl', 'rb') as file:
     best_model_xgb = pickle.load(file)
 
 print("Testing Performances...Please wait")
