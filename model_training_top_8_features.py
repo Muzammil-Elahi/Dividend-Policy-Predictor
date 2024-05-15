@@ -18,6 +18,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 
 from imblearn.over_sampling import SMOTENC
+from sklearn.svm import SVC
 from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import roc_auc_score, make_scorer, accuracy_score, precision_score, recall_score, f1_score
@@ -26,7 +27,7 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.svm import SVC
 from sklearn.pipeline import Pipeline
-from sklearn.preprocessing import OrdinalEncoder, LabelEncoder
+from sklearn.preprocessing import OrdinalEncoder, LabelEncoder, StandardScaler
 from sklearn.compose import ColumnTransformer
 from sklearn.model_selection import cross_val_score, GridSearchCV
 import pickle
@@ -195,6 +196,42 @@ best_model_rf = RandomForestClassifier(**best_params_rf, n_jobs=-1)
 with open('best_models_rf_8_features.pkl', 'wb') as file:
     pickle.dump(best_model_rf, file)
 
+sc = StandardScaler()
+X_train = sc.fit_transform(X_train_oversampled)
+X_test = sc.transform(X_test_transformed)
+
+# Support Vector Machine
+def objective_function(trial):
+    C = trial.suggest_float('C', 0.01, 10, log=True)
+    kernel = trial.suggest_categorical('kernel', ['linear', 'poly', 'rbf', 'sigmoid'])
+    gamma = trial.suggest_categorical('gamma', ['auto', 'scale'])
+
+    model = SVC(
+        C=C,
+        kernel=kernel,
+        gamma=gamma,
+        probability=True
+    )
+
+    # Using cross_val_score to get the average ROC-AUC score for each fold
+    scores = cross_val_score(model, X_train, y_train_oversampled, cv=5, scoring='roc_auc')
+    roc_auc = np.mean(scores)
+    # Printing intermediate results
+    print(f"Trial {trial.number}, C: {C}, kernel: {kernel}, gamma: {gamma}, ROC-AUC: {roc_auc}")
+    return roc_auc
+
+study_svm = optuna.create_study(direction="maximize")
+study_svm.optimize(objective_function, n_trials=100)
+
+best_params_svm = study_svm.best_params
+print("Best Parameters: ", best_params_svm)
+print("Best ROC-AUC: Score: ", study_svm.best_value)
+
+# Create and save model
+best_model_svm = SVC(**best_params_svm, probability=True)
+with open('best_models_svm_8_features.pkl', 'wb') as file:
+    pickle.dump(best_model_svm, file)
+
 label_encoder = LabelEncoder()
 # Fit the encoder and transform the target variable
 y_train_oversampled_encoded = label_encoder.fit_transform(y_train_oversampled)
@@ -247,7 +284,6 @@ best_model_xgb = XGBClassifier(**best_params_xgb, use_label_encoder=False, n_job
 with open('best_models_xgb_8_features.pkl', 'wb') as file:
     pickle.dump(best_model_xgb, file)
 
-# Model selection - Compare Performance
 with open('best_models_lr_8_features.pkl', 'rb') as file:
     best_model_lr = pickle.load(file)
 with open('best_models_dt_8_features.pkl', 'rb') as file:
@@ -258,6 +294,8 @@ with open('best_models_rf_8_features.pkl', 'rb') as file:
     best_model_rf = pickle.load(file)
 with open('best_models_xgb_8_features.pkl', 'rb') as file:
     best_model_xgb = pickle.load(file)
+with open('best_models_svm_8_features.pkl', 'rb') as file:
+    best_model_svm = pickle.load(file)
 
 print("Testing Performances...Please wait")
 best_model_lr.fit(X_train_oversampled, y_train_oversampled)
@@ -280,9 +318,14 @@ best_model_xgb.fit(X_train_oversampled, y_train_oversampled_encoded)
 predicted_probs = best_model_xgb.predict_proba(X_test_transformed)[:, 1]
 xgb_performance = roc_auc_score(y_test, predicted_probs)
 
+best_model_svm.fit(X_train_oversampled, y_train_oversampled)
+predicted_probs = best_model_svm.predict_proba(X_test)[:, 1]
+svm_performance = roc_auc_score(y_test, predicted_probs)
+
 # Test performance of the models are
 print(f"Logistic Regression Test ROCAUC: {lr_performance}")
 print(f"Decision Tree Test ROCAUC: {dt_performance}")
 print(f"KNN Test ROCAUC: {knn_performance}")
 print(f"Random Forest Test ROCAUC: {rf_performance}")
 print(f"XGBoost Test ROCAUC: {xgb_performance}")
+print(f"SVM Test ROCAUC: {svm_performance}")
