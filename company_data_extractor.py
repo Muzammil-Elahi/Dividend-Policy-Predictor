@@ -57,8 +57,10 @@ class company_data_extractor:
 
         choices = ['constant/increased', 'decreased']
 
-        # Create predictor "dps_growth"
-        dividends['dps_growth'] = np.where(
+        dividends['dps_growth'] = dividends['adjDividend'] - dividends['last_year_dividend']
+
+        # Another predictor that we can create is dividend change as a percentage
+        dividends['dps_growth_rate'] = np.where(
             (dividends['last_year_dividend'] == 0) & (dividends['adjDividend'] == 0),
             0,  # If both are 0 then change is 0
             np.where(
@@ -71,7 +73,7 @@ class company_data_extractor:
         dividends['dps_change_next_year'] = np.select(conditions, choices, default=np.nan)
         # Remove the first and last year since they will be NaN
         dividends = dividends.loc[(dividends['year'] > start_year) & (dividends['year'] <= end_year - 1)]
-        dividends = dividends[["year", "adjDividend", "dps_growth", "dps_change_next_year"]]
+        dividends = dividends[["year", "adjDividend", "dps_growth", "dps_growth_rate", "dps_change_next_year"]]
 
         # Engineer Other Predictors
         predictors = pd.DataFrame({"year": list(range(start_year, end_year + 1))})

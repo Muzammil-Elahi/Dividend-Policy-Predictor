@@ -48,27 +48,24 @@ response = requests.get(url)
 fed_interest_rates = pd.DataFrame(response.json()['observations'])['value']
 print('Macro data retrieved.')
 
-# Obtain our dataset
-data_extractor = company_data_extractor(API_KEY_FRED, API_KEY_FMP)
-dataset = []
-ticker = tickers[0]
-print(f"1: Obtaining data for {ticker}")
-company_data = data_extractor.get_data(ticker, start_year, end_year, fed_interest_rates)
-if type(company_data).__name__ != "int":
-    dataset.append(company_data)
-    company_data.to_csv("Stock_data_new.csv",index=False)
-company_number = 2
-for ticker in tickers[1:]:
-    print(f"{company_number}: Obtaining data for {ticker}")
+if __name__ == '__main__':
+    # Obtain our dataset
+    data_extractor = company_data_extractor(API_KEY_FRED, API_KEY_FMP)
+    dataset = []
+    ticker = tickers[0]
+    print(f"1: Obtaining data for {ticker}")
     company_data = data_extractor.get_data(ticker, start_year, end_year, fed_interest_rates)
-    if type(company_data).__name__ == "int":
-        continue
-    # dataset.append(company_data)
-    company_data.to_csv("Stock_data_new.csv",mode='a',index=False,header=False)
-    company_number = company_number + 1
-# dataset = pd.concat(dataset, ignore_index=True)
+    if type(company_data).__name__ != "int":
+        dataset.append(company_data)
+        company_data.to_csv("storage_files/Stock_data.csv",index=False)
+    company_number = 2
+    for ticker in tickers[1:]:
+        print(f"{company_number}: Obtaining data for {ticker}")
+        company_data = data_extractor.get_data(ticker, start_year, end_year, fed_interest_rates)
+        if type(company_data).__name__ == "int":
+            continue
+        # dataset.append(company_data)
+        company_data.to_csv("storage_files/Stock_data.csv",mode='a',index=False,header=False)
+        company_number = company_number + 1
 
-
-# Save data to disk
-# dataset.to_csv("Stock_data.csv", index=False)
 
