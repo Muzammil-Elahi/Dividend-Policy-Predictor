@@ -9,11 +9,12 @@ import csv
 from dotenv import load_dotenv
 from company_data_extractor import company_data_extractor
 
+print('Starting, please wait...')
 X_train = pd.read_csv("storage_files/X_train.csv")
 X_test = pd.read_csv("storage_files/X_test.csv")
 X_train_oversampled = pd.read_csv("storage_files/X_train_oversampled.csv")
 y_train_oversampled = pd.read_csv("storage_files/y_train_oversampled.csv")
-with open('storage_files/best_models_rf_36_features.pkl', 'rb') as file:
+with open('storage_files/best_models_rf.pkl', 'rb') as file:
     best_model_rf = pickle.load(file)
 
 categorical_columns = ["industry","sector","symbol"]
@@ -35,18 +36,11 @@ try:
     ticker_table = tables[0]
     tickers = ticker_table['Symbol'].tolist()
 
-    print('Please enter a company ticker:')
-    company = input()
-    if company not in tickers:
-        print('Company ticker not found.')
-        quit()
-    start_year = 2022
-    end_year = 2023
     load_dotenv('.env')
     API_KEY_FRED = os.environ.get('API_KEY_FRED')
     API_KEY_FMP = os.environ.get('API_KEY_FMP')
-    data_extractor = company_data_extractor(API_KEY_FRED, API_KEY_FMP)
-
+    start_year = 2022
+    end_year = 2023
     # Macroeconomics - Federal Interest Rate (Annualized)
     url = f'https://api.stlouisfed.org/fred/series/observations?series_id=FEDFUNDS&' \
           f'api_key={API_KEY_FRED}&' \
@@ -55,10 +49,18 @@ try:
           f'frequency=a'
     response = requests.get(url)
     fed_interest_rates = pd.DataFrame(response.json()['observations'])['value']
-
-    company_data = data_extractor.get_data(company, start_year, end_year, fed_interest_rates)
-    company_data.drop("dps_change_next_year", axis="columns", inplace=True)
-    result = pipeline.predict_proba(company_data)[1][0]
-    print(f'Predicted probability for non-decreasing dividend: {result}')
+    while True:
+        print('Please enter a company ticker: (Enter 0 to quit the program)')
+        company = input()
+        if company == '0':
+            break
+        elif company not in tickers:
+            print('Company ticker not found.')
+            continue
+        data_extractor = company_data_extractor(API_KEY_FRED, API_KEY_FMP)
+        company_data = data_extractor.get_data(company, start_year, end_year, fed_interest_rates)
+        company_data.drop("dps_change_next_year", axis="columns", inplace=True)
+        result = pipeline.predict_proba(company_data)[1][0]
+        print(f'Predicted probability for non-decreasing dividend: {result}')
 except:
     print('Connection error! Please restart and try again.')
