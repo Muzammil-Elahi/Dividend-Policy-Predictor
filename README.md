@@ -9,7 +9,7 @@ We retrieved data from Financial Modeling Prep, Federal Reserve Economic Data (F
 1. `git clone https://github.com/Muzammil-Elahi/Dividend-Policy-Predictor`
 2. Register and obtain API Keys from https://financialmodelingprep.com/ and https://fred.stlouisfed.org/. Store them in strings in `.env` with names `API_KEY_FMP` and `API_KEY_FRED`.
 
-For the following files, we recommend to run with the following order one by one. To save time, you can solely run the last file, but the outcome would be based on outdated data.
+For the following files, we recommend to run with the following order one by one. To save time, you can also simply run the last file, but the outcome would be based on outdated data.
 
 3. `database_creation.py`
 4. `data_preprocessing.py`
