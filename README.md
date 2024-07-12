@@ -3,7 +3,7 @@
 ## Project description
 This project aims to predict a given company's dividend policy in the coming year: whether or not the company would cut dividends. We use companies' historical data and machine learning models to discover the relationship among the dividend policy and other indicators of the company (such as dividend per share, current ratio, industry to which the company belongs, etc.).
 ## Data usage and acknowledgement
-This is a collaborative project among Muzammil Elahi, Eric Lu and Rosalie Huang, with support from David Liu.
+This is a collaborative project among Muzammil Elahi, Eric Lu and Rosalie Huang.
 We retrieved data from Financial Modeling Prep, Federal Reserve Economic Data (FRED), Wikipedia and Yahoo Finance.
 ## Installation and execution
 1. `git clone https://github.com/Muzammil-Elahi/Dividend-Policy-Predictor`
